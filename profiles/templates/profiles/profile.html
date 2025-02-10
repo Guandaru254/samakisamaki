@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Welcome, {{ user.first_name }}!</h2>
+    <p>Username: {{ user.username }}</p>
+    <p>Email: {{ user.email }}</p>
+    <p>Phone Number: {{ user.profile.phone_number }}</p>
+    <p>Address: {{ user.profile.address }}</p>
+
+    <a href="{% url 'update_profile' %}" class="btn btn-warning">Update Profile</a>
+</div>
+{% endblock %}

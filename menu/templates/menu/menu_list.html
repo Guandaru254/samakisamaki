@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}Our Menu{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <!-- Sidebar for categories, filters, and search -->
+        <div class="col-md-3 aos-init" data-aos="fade-right">
+            <h4 class="text-center mb-4 fw-semibold">Categories</h4>
+            <div class="list-group">
+                <a href="{% url 'menu_list' %}" class="list-group-item list-group-item-action {% if not category %}active{% endif %}">All</a>
+                <a href="{% url 'menu_list' %}?category=starters" class="list-group-item list-group-item-action {% if category == 'starters' %}active{% endif %}">Starters</a>
+                <a href="{% url 'menu_list' %}?category=main_courses" class="list-group-item list-group-item-action {% if category == 'main_courses' %}active{% endif %}">Main Courses</a>
+                <a href="{% url 'menu_list' %}?category=desserts" class="list-group-item list-group-item-action {% if category == 'desserts' %}active{% endif %}">Desserts</a>
+                <a href="{% url 'menu_list' %}?category=beverages" class="list-group-item list-group-item-action {% if category == 'beverages' %}active{% endif %}">Beverages</a>
+                <a href="{% url 'menu_list' %}?category=seafood" class="list-group-item list-group-item-action {% if category == 'seafood' %}active{% endif %}">Seafood</a>
+                <a href="{% url 'menu_list' %}?category=specials" class="list-group-item list-group-item-action {% if category == 'specials' %}active{% endif %}">Specials</a>
+            </div>
+
+            <!-- Search Box -->
+            <div class="mt-4">
+                <h5 class="fw-semibold">Search Menu</h5>
+                <form method="GET" action="{% url 'menu_list' %}">
+                    <input type="text" name="search" class="form-control rounded-pill" placeholder="Search for items..." value="{{ request.GET.search }}">
+                    <button type="submit" class="btn btn-dark mt-2 w-100 rounded-pill">Search</button>
+                </form>
+            </div>
+
+            <!-- Filters -->
+            <div class="mt-4">
+                <h5 class="fw-semibold">Filter by Price</h5>
+                <form method="GET" action="{% url 'menu_list' %}">
+                    <input type="number" name="min_price" class="form-control rounded-pill" placeholder="Min Price" value="{{ request.GET.min_price }}">
+                    <input type="number" name="max_price" class="form-control mt-2 rounded-pill" placeholder="Max Price" value="{{ request.GET.max_price }}">
+                    <button type="submit" class="btn btn-dark mt-2 w-100 rounded-pill">Apply</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="col-md-9">
+            <h1 class="text-center mb-4 fw-bold aos-init typewriter" data-aos="fade-down">Our Menu</h1>
+
+            <!-- Sorting options -->
+            <div class="d-flex justify-content-end mb-4 aos-init" data-aos="fade-left">
+                <form method="GET" action="{% url 'menu_list' %}">
+                    <select name="sort_by" class="form-select rounded-pill" onchange="this.form.submit()">
+                        <option value="">Sort By</option>
+                        <option value="price_asc" {% if request.GET.sort_by == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                        <option value="price_desc" {% if request.GET.sort_by == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+                        <option value="name_asc" {% if request.GET.sort_by == 'name_asc' %}selected{% endif %}>Name: A to Z</option>
+                        <option value="name_desc" {% if request.GET.sort_by == 'name_desc' %}selected{% endif %}>Name: Z to A</option>
+                    </select>
+                </form>
+            </div>
+
+            <!-- Menu Items with Animations -->
+            <div class="row">
+                {% for item in menu_items %}
+                    <div class="col-md-4 mb-4 aos-init" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
+                        <a href="{% url 'menu_detail' item.id %}" class="text-decoration-none">
+                            <div class="card shadow-lg border-0 rounded-4 transform-hover">
+                                <img src="{{ item.image.url }}" class="card-img-top rounded-top-4" alt="{{ item.name }}">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title fw-bold">{{ item.name }}</h5>
+                                    <p class="card-text text-muted">{{ item.description|truncatechars:60 }}</p>
+                                    <p class="text-dark fw-bold">KES {{ item.price }}</p>
+                                    <a href="{% url 'add_to_cart' item.id %}" class="btn btn-dark rounded-pill me-3 scale-on-click">Add to Order</a>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                {% empty %}
+                    <p class="text-center text-muted">No items available for your filters.</p>
+                {% endfor %}
+            </div>
+
+            <!-- Back to Home -->
+            <div class="text-center mt-4">
+                <a href="{% url 'home' %}" class="btn btn-outline-dark rounded-pill px-4">Back to Home</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include AOS (Animate on Scroll) -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    AOS.init({
+        duration: 800, // Animation duration in milliseconds
+        once: true // Animation should happen only once
+    });
+
+    // Add scale effect on button click
+    document.querySelectorAll('.scale-on-click').forEach(btn => {
+        btn.addEventListener('click', function() {
+            btn.classList.add('clicked');
+            setTimeout(() => btn.classList.remove('clicked'), 200);
+        });
+    });
+</script>
+
+<style>
+    .transform-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .transform-hover:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+    .scale-on-click.clicked {
+        transform: scale(0.95);
+    }
+    .typewriter {
+        display: inline-block;
+        overflow: hidden;
+        white-space: nowrap;
+        animation: typing 3s steps(20, end), blink-caret 0.75s step-end infinite;
+    }
+
+    @keyframes typing {
+        from { width: 0; }
+        to { width: 100%; }
+    }
+    @keyframes blink-caret {
+        50% { border-right: 2px solid transparent; }
+    }
+</style>
+{% endblock %}

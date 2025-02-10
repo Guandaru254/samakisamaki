@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Gallery - Samaki Samaki{% endblock %}
+
+{% block content %}
+    <section class="breadcrumb-section set-bg" data-setbg="static/img/breadcrumb-bg.jpg">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <div class="breadcrumb__text">
+                        <h2>Our Gallery</h2>
+                        <div class="breadcrumb__option">
+                            <a href="{% url 'home' %}">Home</a>
+                            <span>Gallery</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="gallery spad">
+        <div class="container">
+            <div class="row">
+                {% for image in gallery_images %}
+                <div class="col-lg-4 col-md-4 col-sm-6">
+                    <div class="gallery__item">
+                        <img src="{{ image.url }}" alt="{{ image.alt }}" class="img-fluid">
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+{% endblock %}

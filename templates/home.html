@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome to Samaki Samaki{% endblock %}
+
+{% block content %}
+<div class="container text-center">
+    <h1 class="display-4">Welcome to Samaki Samaki!</h1>
+    <p class="lead">Enjoy delicious seafood at your fingertips. Browse our menu and order your favorite dishes, now available for delivery.</p>
+
+    <div class="mt-4">
+        <a href="{% url 'menu_list' %}" class="btn btn-primary btn-lg">View the Menu</a>
+    </div>
+
+    <div class="mt-4">
+        <p>Already have an account?</p>
+        <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg">Sign In</a>
+    </div>
+
+    <div class="mt-4">
+        <p>New to Samaki Samaki?</p>
+        <a href="{% url 'register' %}" class="btn btn-outline-success btn-lg">Register</a>
+    </div>
+</div>
+{% endblock %}

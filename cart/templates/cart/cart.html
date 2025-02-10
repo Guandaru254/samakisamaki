@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">🛒 Your Cart</h1>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="list-group">
+                {% for item in cart_items %}
+                    <div class="list-group-item d-flex align-items-center shadow-sm p-3 rounded mb-3">
+                        <!-- Image -->
+                        <div style="flex: 0 0 80px;">
+                            <img src="{{ item.item.image.url }}" alt="{{ item.item.name }}" class="rounded" width="80" height="80" style="object-fit: cover;">
+                        </div>
+
+                        <!-- Name and Price -->
+                        <div class="ms-3" style="flex: 1 1 auto; min-width: 200px;">
+                            <h5 class="mb-1 text-start">{{ item.item.name }}</h5>
+                            <p class="text-muted mb-0">KES {{ item.item.price }}</p>
+                        </div>
+
+                        <!-- Quantity Selector and Total -->
+                        <div class="d-flex align-items-center" style="flex: 0 0 auto;">
+                            <div class="d-flex align-items-center me-3">
+                                <button class="btn btn-outline-secondary btn-sm decrease-qty" data-id="{{ item.id }}">−</button>
+                                <input type="number" class="form-control text-center mx-2 qty-input" data-id="{{ item.id }}" value="{{ item.quantity }}" min="1" style="width: 50px;">
+                                <button class="btn btn-outline-primary btn-sm increase-qty" data-id="{{ item.id }}">+</button>
+                            </div>
+                            <p class="fw-bold mb-0 me-3 item-total">KES {{ item.total_price|floatformat:2 }}</p>
+                            <a href="{% url 'cart_remove' item.id %}" class="btn btn-outline-danger btn-sm remove-item">Remove</a>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-center text-muted">Your cart is empty.</p>
+                {% endfor %}
+            </div>
+
+            <!-- Clear Cart Button -->
+            {% if cart_items %}
+            <div class="text-center mt-4">
+                <a href="{% url 'clear_cart' %}" class="btn btn-danger w-50 mb-5">Clear Cart</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Cart Summary -->
+        <div class="col-md-4">
+            <div class="card shadow-sm p-4">
+                <h4 class="fw-bold">Order Summary</h4>
+                <hr>
+                <p class="d-flex justify-content-between">
+                    <span>Subtotal:</span> 
+                    <span class="fw-bold" id="subtotal">KES {{ subtotal|floatformat:2 }}</span>
+                </p>
+                <p class="d-flex justify-content-between">
+                    <span>Delivery Fee:</span> 
+                    <span class="fw-bold">KES {{ delivery_fee }}</span>
+                </p>
+                <hr>
+                <h5 class="d-flex justify-content-between">
+                    <span>Total:</span> 
+                    <span class="fw-bold text-primary" id="total-amount">KES {{ total_price|floatformat:2 }}</span>
+                </h5>
+
+                <a href="{% url 'checkout' %}" class="btn btn-primary w-100 mt-3">Proceed to Checkout</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
+
+<!-- JavaScript for AJAX Updates and Toast Notification -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Function to show toast notification
+        function showToast(message, type = "success") {
+            const toast = $(`
+                <div class="toast align-items-center text-bg-${type} border-0 animate__animated animate__fadeInRight" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">${message}</div>
+                        <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `);
+            $("#toast-container").append(toast);
+            toast.toast({ delay: 3000 });
+            toast.toast('show');
+            toast.on('hidden.bs.toast', function () {
+                toast.remove();
+            });
+        }
+
+        // Update totals on quantity change
+        function updateTotals() {
+            let subtotal = 0;
+            $(".list-group-item").each(function () {
+                let itemTotal = parseFloat($(this).find(".item-total").text().replace(/[^\d.]/g, ''));
+                subtotal += itemTotal;
+            });
+
+            let deliveryFee = 200;
+            let totalAmount = subtotal + deliveryFee;
+            $("#subtotal").text(`KES ${subtotal.toFixed(2)}`);
+            $("#total-amount").text(`KES ${totalAmount.toFixed(2)}`);
+        }
+
+        // Handle quantity change
+        $(".qty-input").on("change", function () {
+            let input = $(this);
+            let itemId = input.data("id");
+            let newQuantity = input.val();
+
+            if (newQuantity > 0) {
+                $.ajax({
+                    url: `/cart/update/${itemId}/`,
+                    method: "POST",
+                    data: {
+                        quantity: newQuantity,
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                    },
+                    success: function (response) {
+                        input.closest(".list-group-item").find(".item-total").text(`KES ${response.item_total.toFixed(2)}`);
+                        updateTotals();
+                        showToast("Quantity updated successfully.");
+                    },
+                    error: function () {
+                        showToast("Error updating quantity. Please try again.", "danger");
+                    }
+                });
+            }
+        });
+
+        $(".increase-qty").on("click", function () {
+            let input = $(this).prev(".qty-input");
+            input.val(parseInt(input.val()) + 1).trigger("change");
+        });
+
+        $(".decrease-qty").on("click", function () {
+            let input = $(this).next(".qty-input");
+            if (parseInt(input.val()) > 1) {
+                input.val(parseInt(input.val()) - 1).trigger("change");
+            }
+        });
+    });
+</script>
+{% endblock %}

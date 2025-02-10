@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ item.name }} Details{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row align-items-center">
+        <!-- Product Image -->
+        <div class="col-lg-6 mb-4 mb-lg-0">
+            <div class="card shadow-lg border-0 rounded-4">
+                <img src="{{ item.image.url }}" class="card-img-top rounded-4" alt="{{ item.name }}">
+            </div>
+        </div>
+
+        <!-- Product Details -->
+        <div class="col-lg-6">
+            <div class="px-4 py-3 bg-white shadow-lg rounded-4">
+                <h1 class="fw-bold display-5">{{ item.name }}</h1>
+                <p class="text-muted fs-5 mt-3">{{ item.description }}</p>
+                <p class="text-dark fw-bold fs-4 mt-4">Price: <span class="text-success">KES {{ item.price }}</span></p>
+
+                <!-- Buttons -->
+                <div class="d-flex flex-wrap gap-3 mt-5">
+                    <a href="{% url 'add_to_cart' item.id %}" class="btn btn-success btn-lg rounded-pill px-5 shadow-sm">
+                        <i class="bi bi-cart-fill me-2"></i>Add to Order
+                    </a>
+                    <a href="{% url 'menu_list' %}" class="btn btn-outline-secondary btn-lg rounded-pill px-5 shadow-sm">
+                        <i class="bi bi-arrow-left me-2"></i>Continue Shopping
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
