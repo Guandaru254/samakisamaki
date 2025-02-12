@@ -21,7 +21,6 @@ COPY . /app/
 # Collect static files
 RUN python manage.py collectstatic --noinput
 
-
 # Stage 2: Production stage
 FROM python:3.10-slim
 
@@ -33,8 +32,12 @@ WORKDIR /app
 # Copy the build from the first stage
 COPY --from=builder /app /app
 
+# Mount the media volume
+VOLUME /app/media
+
 # Expose port 8000 for the application
 EXPOSE 8000
 
-# Command to run the app using Gunicorn
-CMD ["gunicorn", "samaki.wsgi:application", "--bind", "0.0.0.0:8000"]
+
+# Command to run the app with Waitress
+CMD ["python", "run_waitress.py"]

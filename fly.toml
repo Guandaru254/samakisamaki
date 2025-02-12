@@ -1,44 +1,39 @@
-# fly.toml app configuration file generated for samakisamaki on 2025-02-11T00:19:07+03:00
-#
-# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
+# fly.toml app configuration file for samakisamaki
 
-app = 'samakisamaki'
-primary_region = 'jnb'
+app = "samakisamaki"
+primary_region = "jnb"
 
 [build]
-  image = 'python:3.10-slim'
+  dockerfile = "./Dockerfile"  # Use Dockerfile instead of a prebuilt image
 
 [env]
-  DEBUG = 'false'
-  SECRET_KEY = 'your-secret-key'
+  DEBUG = "false"
+  SECRET_KEY = "your-secret-key"
 
 [http_service]
-  internal_port = 8080
+  internal_port = 8000
   force_https = true
-  auto_stop_machines = 'stop'
+  auto_stop_machines = "stop"
   auto_start_machines = true
-  min_machines_running = 0
-  processes = ['app']
+  min_machines_running = 1  # Ensure at least one machine is always running
 
 [[services]]
-  protocol = 'tcp'
+  protocol = "tcp"
   internal_port = 8000
 
   [[services.ports]]
     port = 80
-    handlers = ['http']
+    handlers = ["http"]
 
   [[services.ports]]
     port = 443
-    handlers = ['tls', 'http']
+    handlers = ["tls", "http"]
 
   [services.concurrency]
-    type = 'connections'
+    type = "connections"
     hard_limit = 25
     soft_limit = 20
 
-[[vm]]
-  memory = '1gb'
-  cpu_kind = 'shared'
-  cpus = 1
+[[mounts]]
+  source = "media_data"  # Name of the Fly volume created
+  destination = "/app/media"  # Where media files will be stored
