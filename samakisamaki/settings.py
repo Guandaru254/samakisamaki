@@ -21,12 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-0v_6g2kzx@%&*em3v_b&y(vrh=1)x(tqupgj%!dqcb4fkox!rl"
+SECRET_KEY = os.getenv('SECRET_KEY',"django-insecure-0v_6g2kzx@%&*em3v_b&y(vrh=1)x(tqupgj%!dqcb4fkox!rl")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['.fly.dev', '127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -58,6 +58,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = "samakisamaki.urls"
@@ -132,6 +133,8 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [  
     os.path.join(BASE_DIR, 'static'),  # Ensure this path is correct  
 ] 
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
