@@ -40,8 +40,6 @@
 
         <!-- Main content -->
         <div class="col-md-9">
-            <h1 class="text-center mb-4 fw-bold aos-init typewriter" data-aos="fade-down">Our Menu</h1>
-
             <!-- Sorting options -->
             <div class="d-flex justify-content-end mb-4 aos-init" data-aos="fade-left">
                 <form method="GET" action="{% url 'menu_list' %}">
@@ -55,31 +53,32 @@
                 </form>
             </div>
 
-            <!-- Menu Items with Animations -->
-            <div class="row">
-                {% for item in menu_items %}
-                    <div class="col-md-4 mb-4 aos-init" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
-                        <a href="{% url 'menu_detail' item.id %}" class="text-decoration-none">
-                            <div class="card shadow-lg border-0 rounded-4 transform-hover">
-                                <img src="{{ item.image.url }}" class="card-img-top rounded-top-4" alt="{{ item.name }}">
-                                <div class="card-body text-center">
-                                    <h5 class="card-title fw-bold">{{ item.name }}</h5>
-                                    <p class="card-text text-muted">{{ item.description|truncatechars:60 }}</p>
-                                    <p class="text-dark fw-bold">KES {{ item.price }}</p>
-                                    <a href="{% url 'add_to_cart' item.id %}" class="btn btn-dark rounded-pill me-3 scale-on-click">Add to Order</a>
-                                </div>
-                            </div>
-                        </a>
+       <!-- Menu Items with Animations -->
+<div class="row">
+    {% for item in menu_items %}
+        <div class="col-md-4 mb-4 aos-init" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
+            <a href="{% url 'menu_detail' item.id %}" class="text-decoration-none">
+                <div class="card shadow-lg border-0 rounded-4 transform-hover">
+                    <img src="{{ item.image.url }}" class="card-img-top rounded-top-4" alt="{{ item.name }}">
+                    <div class="card-body text-center d-flex flex-column align-items-center">
+                        <h5 class="card-title ">{{ item.name }}</h5>
+                        <p class="text-dark">KES {{ item.price }}</p>
+                        <a href="{% url 'add_to_cart' item.id %}" class="btn btn-dark rounded-pill scale-on-click w-75">Add to Order</a>
                     </div>
-                {% empty %}
-                    <p class="text-center text-muted">No items available for your filters.</p>
-                {% endfor %}
-            </div>
+                </div>
+            </a>
+        </div>
+    {% empty %}
+        <p class="text-center text-muted">No items available for your filters.</p>
+    {% endfor %}
+</div>
+
 
             <!-- Back to Home -->
             <div class="text-center mt-4">
                 <a href="{% url 'home' %}" class="btn btn-outline-dark rounded-pill px-4">Back to Home</a>
             </div>
+            <br>
         </div>
     </div>
 </div>

@@ -1,6 +1,8 @@
 from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordResetForm
 from django.shortcuts import render, redirect
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.views import PasswordResetView
+from django.urls import reverse_lazy
 
 def register(request):
     if request.method == 'POST':
@@ -21,8 +23,14 @@ def login_user(request):
             return redirect('menu_list')
     else:
         form = AuthenticationForm()
-    return render(request, 'menu/menu_list.html', {'form': form})
+    return render(request, 'menu/menu_list.html')
 
 def logout_user(request):
     logout(request)
     return redirect('login')  # Redirects user to login page after logging out
+
+# Password Reset View
+class CustomPasswordResetView(PasswordResetView):
+    template_name = 'users/password_reset.html'
+    success_url = reverse_lazy('password_reset_done')
+    form_class = PasswordResetForm
