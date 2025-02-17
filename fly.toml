@@ -1,39 +1,49 @@
-# fly.toml app configuration file for samakisamaki
-
 app = "samakisamaki"
 primary_region = "jnb"
 
 [build]
-  dockerfile = "./Dockerfile"  # Use Dockerfile instead of a prebuilt image
+  dockerfile = "./Dockerfile"  # Ensure Dockerfile is used for deployment
 
 [env]
   DEBUG = "false"
-  SECRET_KEY = "your-secret-key"
+  SECRET_KEY = "your-secret-key"  # Use an environment variable in production
+  DB_NAME = "postgres"
+  DB_USER = "postgres"
+  DB_PASSWORD = "your-secure-password"
+  DB_HOST = "your-db-host"
+  DB_PORT = "5432"
+  PROD_DB_NAME = "postgres"
+  PROD_DB_USER = "postgres"
+  PROD_DB_PASSWORD = "your-secure-db-password"
+  PROD_DB_HOST = "your-prod-db-host"
+  PROD_DB_PORT = "5432"
+  ALLOWED_HOSTS = "127.0.0.1,localhost,samakisamaki.fly.dev"
+  CSRF_TRUSTED_ORIGINS = "https://samakisamaki.fly.dev"
 
 [http_service]
-  internal_port = 8000
-  force_https = true
+  internal_port = 8080  # Port for Waitress to listen on
+  force_https = true  # Enforce HTTPS
   auto_stop_machines = "stop"
   auto_start_machines = true
-  min_machines_running = 1  # Ensure at least one machine is always running
+  min_machines_running = 1  # Ensure at least one machine is running
 
 [[services]]
   protocol = "tcp"
-  internal_port = 8000
+  internal_port = 8080
 
   [[services.ports]]
     port = 80
-    handlers = ["http"]
+    handlers = ["http"]  # Redirect HTTP to HTTPS
 
   [[services.ports]]
     port = 443
-    handlers = ["tls", "http"]
+    handlers = ["tls", "http"]  # Handle HTTPS requests
 
   [services.concurrency]
     type = "connections"
-    hard_limit = 25
-    soft_limit = 20
+    hard_limit = 50
+    soft_limit = 30
 
 [[mounts]]
-  source = "media_data"  # Name of the Fly volume created
-  destination = "/app/media"  # Where media files will be stored
+  source = "media_data"  # Fly volume for media files
+  destination = "/app/media"  # Ensure media files persist across deployments

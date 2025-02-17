@@ -14,9 +14,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt /app/
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
-# Check if Waitress is installed
-RUN pip show waitress || (echo "Waitress is missing in the builder stage!" && exit 1)
-
 # Copy the project files
 COPY . /app/
 
