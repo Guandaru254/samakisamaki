@@ -57,6 +57,9 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
+# Root URL configuration
+ROOT_URLCONF = 'samakisamaki.urls'
+
 # Database configuration (Development vs. Production)
 if DJANGO_DEVELOPMENT:
     DATABASES = {
@@ -139,3 +142,20 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '@Guandaru19')
 
 # Session expiration
 SESSION_COOKIE_AGE = 3600  # Set session to expire after 1 hour
+
+# TEMPLATES setting
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],  # Ensure this points to the correct templates folder
+        'APP_DIRS': True,  # This ensures app templates are found too
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
