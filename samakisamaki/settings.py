@@ -1,9 +1,12 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import dj_database_url
+import environ
 
-# Load environment variables from the .env file
-load_dotenv()
+# Initialize the environment variables
+env = environ.Env()
+environ.Env.read_env()  # This loads the .env file into the environment
 
 # Base directory of the project
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,10 +23,17 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost,samakisamaki.fly
 CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'https://samakisamaki.fly.dev').split(',')
 
 # Security settings for cookies and HTTPS redirection
-CSRF_COOKIE_SECURE = not DEBUG
-SESSION_COOKIE_SECURE = not DEBUG
-SECURE_SSL_REDIRECT = not DEBUG
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+if DEBUG:
+    CSRF_COOKIE_SECURE = False
+    SESSION_COOKIE_SECURE = False
+    SECURE_SSL_REDIRECT = False
+else:
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = False  # Always redirect to HTTPS in production
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+USE_X_FORWARDED_HOST = False # Trust headers from reverse proxies (like Fly.io)
 
 # Installed apps
 INSTALLED_APPS = [
@@ -60,30 +70,24 @@ MIDDLEWARE = [
 # Root URL configuration
 ROOT_URLCONF = 'samakisamaki.urls'
 
-# Database configuration (Development vs. Production)
+# Database configuration using dj-database-url
 if DJANGO_DEVELOPMENT:
+    # Use dj-database-url to parse the local DATABASE_URL (for local development)
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME', 'postgres'),
-            'USER': os.getenv('DB_USER', 'postgres'),
-            'PASSWORD': os.getenv('DB_PASSWORD', ''),
-            'HOST': os.getenv('DB_HOST', 'localhost'),
-            'PORT': os.getenv('DB_PORT', '5432'),
-        }
+        "default": dj_database_url.config(
+            default=os.getenv("DATABASE_URL", "DATABASE_URL=postgres://postgres:%40Guandaru19@localhost:5432/postgres"),
+            conn_max_age=600
+        )
     }
-else:  # Production environment (Fly.io or similar)
+else:
+    # Production database configuration for Fly.io
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('PROD_DB_NAME', 'postgres'),
-            'USER': os.getenv('PROD_DB_USER', 'postgres'),
-            'PASSWORD': os.getenv('PROD_DB_PASSWORD', ''),
-            'HOST': os.getenv('PROD_DB_HOST', ''),
-            'PORT': os.getenv('PROD_DB_PORT', '5432'),
-        }
-    }
-
+        "default": dj_database_url.config(
+            default=os.getenv("PROD_DATABASE_URL"),
+            conn_max_age=600,
+            ssl_require=os.getenv("PROD_DB_SSL", "false").lower() == "true"
+        )
+    }    
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -98,7 +102,7 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-# Static files
+# Static files settings for production (WhiteNoise)
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
@@ -107,23 +111,25 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+WHITENOISE_MAX_AGE = 31536000  # Cache static files for one year
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Login and logout redirects
-LOGIN_REDIRECT_URL = '/menu/menu_list/'
+LOGIN_REDIRECT_URL = '/menu/menu_list'
 LOGOUT_REDIRECT_URL = '/'
-
-# Additional security settings
-USE_X_FORWARDED_HOST = True  # Ensure headers are properly trusted from reverse proxies
 
 # Secure session cookie settings
 SESSION_COOKIE_HTTPONLY = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_AGE = 3600  # Set session expiration to 1 hour
 
-# WhiteNoise - static file caching for production
-WHITENOISE_MAX_AGE = 31536000  # Cache static files for one year
+# This header tells Django to trust the 'X-Forwarded-Proto' header from Fly.io
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Additional security settings
+USE_X_FORWARDED_HOST = True  # Ensure headers are properly trusted from reverse proxies
 
 # Caches (Optional for production)
 CACHES = {
@@ -132,16 +138,16 @@ CACHES = {
     }
 }
 
-# Email settings
+# Email settings (using environment variables)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT = os.getenv('EMAIL_PORT', 587)
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'guandarukimathi@gmail.com')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '@Guandaru19')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'your-email@gmail.com')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'your-password')
 
-# Session expiration
-SESSION_COOKIE_AGE = 3600  # Set session to expire after 1 hour
+# WhiteNoise - static file caching for production
+WHITENOISE_MAX_AGE = 31536000  # Cache static files for one year
 
 # TEMPLATES setting
 TEMPLATES = [
