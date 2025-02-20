@@ -2,6 +2,11 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+from dotenv import load_dotenv
+
+load_dotenv()  # Load environment variables from .env
+
+print("DATABASE_URL:", os.getenv("DATABASE_URL")) #Print the database url to console.
 
 
 def main():

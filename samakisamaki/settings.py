@@ -1,26 +1,26 @@
 import os
 from pathlib import Path
-from dotenv import load_dotenv
+
 import dj_database_url
 import environ
 
 # Initialize the environment variables
 env = environ.Env()
-environ.Env.read_env()  # This loads the .env file into the environment
+environ.Env.read_env()  # This loads the.env file into the environment
 
 # Base directory of the project
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: Keep the secret key safe in production!
-SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
+SECRET_KEY = os.getenv('SECRET_KEY')  # Use env variable
 
 # Determine if the environment is development or production
-DJANGO_DEVELOPMENT = os.getenv('DJANGO_DEVELOPMENT', 'True') == 'True'
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
+DJANGO_DEVELOPMENT = os.getenv('DJANGO_DEVELOPMENT', 'False') == 'True'
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 # Allowed hosts and CSRF trusted origins
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost,samakisamaki.fly.dev').split(',')
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'https://samakisamaki.fly.dev').split(',')
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:8000,http://127.0.0.1:8000,https://samakisamaki.fly.dev').split(',')
 
 # Security settings for cookies and HTTPS redirection
 if DEBUG:
@@ -30,10 +30,10 @@ if DEBUG:
 else:
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
-    SECURE_SSL_REDIRECT = False  # Always redirect to HTTPS in production
+    SECURE_SSL_REDIRECT = True  # Always redirect to HTTPS in production
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-USE_X_FORWARDED_HOST = False # Trust headers from reverse proxies (like Fly.io)
+USE_X_FORWARDED_HOST = True  # Trust headers from reverse proxies (like Fly.io)
 
 # Installed apps
 INSTALLED_APPS = [
@@ -75,25 +75,35 @@ if DJANGO_DEVELOPMENT:
     # Use dj-database-url to parse the local DATABASE_URL (for local development)
     DATABASES = {
         "default": dj_database_url.config(
-            default=os.getenv("DATABASE_URL", "DATABASE_URL=postgres://postgres:%40Guandaru19@localhost:5432/postgres"),
+            default=os.getenv("DATABASE_URL", "postgres://postgres:%40Guandaru19@localhost:5432/postgres"),
             conn_max_age=600
         )
     }
+
 else:
     # Production database configuration for Fly.io
     DATABASES = {
         "default": dj_database_url.config(
-            default=os.getenv("PROD_DATABASE_URL"),
+            default=os.getenv("PROD_DATABASE_URL"),  # use env variable
             conn_max_age=600,
             ssl_require=os.getenv("PROD_DB_SSL", "false").lower() == "true"
         )
-    }    
+    }
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"
+    },
 ]
 
 # Localization settings
@@ -117,7 +127,7 @@ WHITENOISE_MAX_AGE = 31536000  # Cache static files for one year
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Login and logout redirects
-LOGIN_REDIRECT_URL = '/menu/menu_list'
+LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
 # Secure session cookie settings
@@ -143,8 +153,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT = os.getenv('EMAIL_PORT', 587)
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'your-email@gmail.com')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'your-password')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'your-email@gmail.com')  # Use env variable
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'your-password')  # Use env variable
 
 # WhiteNoise - static file caching for production
 WHITENOISE_MAX_AGE = 31536000  # Cache static files for one year

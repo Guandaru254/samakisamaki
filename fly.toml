@@ -2,30 +2,23 @@ app = "samakisamaki"
 primary_region = "jnb"
 
 [build]
-  dockerfile = "./Dockerfile"  # Ensure Dockerfile is used for deployment
+  dockerfile = "./Dockerfile"
 
 [env]
   DEBUG = "false"
-  SECRET_KEY = "your-secret-key"  # Use an environment variable in production
-  DB_NAME = "postgres"
-  DB_USER = "postgres"
-  DB_PASSWORD = "your-secure-password"
-  DB_HOST = "your-db-host"
-  DB_PORT = "5432"
-  PROD_DB_NAME = "postgres"
-  PROD_DB_USER = "postgres"
-  PROD_DB_PASSWORD = "your-secure-db-password"
-  PROD_DB_HOST = "your-prod-db-host"
-  PROD_DB_PORT = "5432"
-  ALLOWED_HOSTS = "127.0.0.1,localhost,samakisamaki.fly.dev"
+  DJANGO_DEVELOPMENT = "false"
+  PROD_DATABASE_URL = "postgres://postgres:${POSTGRES_PASSWORD}@wispy-snowflake-7733.flycast:5432/postgres" # Corrected Port
+  PROD_DB_SSL = "false" # Set this to "true" if SSL is required by Fly.io
+
+  ALLOWED_HOSTS = "samakisamaki.fly.dev"
   CSRF_TRUSTED_ORIGINS = "https://samakisamaki.fly.dev"
 
 [http_service]
-  internal_port = 8080  # Port for Waitress to listen on
-  force_https = true  # Enforce HTTPS
+  internal_port = 8080
+  force_https = true
   auto_stop_machines = "stop"
   auto_start_machines = true
-  min_machines_running = 1  # Ensure at least one machine is running
+  min_machines_running = 1
 
 [[services]]
   protocol = "tcp"
@@ -33,11 +26,11 @@ primary_region = "jnb"
 
   [[services.ports]]
     port = 80
-    handlers = ["http"]  # Redirect HTTP to HTTPS
+    handlers = ["http"]
 
   [[services.ports]]
     port = 443
-    handlers = ["tls", "http"]  # Handle HTTPS requests
+    handlers = ["tls", "http"]
 
   [services.concurrency]
     type = "connections"
@@ -45,5 +38,5 @@ primary_region = "jnb"
     soft_limit = 30
 
 [[mounts]]
-  source = "media_data"  # Fly volume for media files
-  destination = "/app/media"  # Ensure media files persist across deployments
+  source = "media_data"
+  destination = "/app/media"

@@ -1,0 +1,52 @@
+# Python bytecode and compiled files
+*.pyc
+*.pyo
+__pycache__/
+
+# Virtual environment
+venv/
+.venv/
+
+# Logs and temporary files
+*.log
+*.tmp
+tmp/
+temp/
+
+# Database files (if any)
+*.sqlite3
+*.db
+
+# Static files (if collected during local development)
+static/
+
+# Media files (if any)
+media/
+
+# IDE files
+.idea/
+*.swp
+*.swo
+*.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker-related files
+Dockerfile
+.dockerignore
+
+# Environment files
+.env
+.env.*
+
+# Git files
+.git/
+
+# Node modules (if using Node.js)
+node_modules/
+
+# Other files you don't want to include
+*.dump
+*.sql

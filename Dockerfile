@@ -1,48 +1,57 @@
-# Stage 1: Build stage
+# ==========================
+# 🏗️ Stage 1: Build Stage
+# ==========================
 FROM python:3.10-slim AS builder
 
+# Environment variables for Python
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Install required system packages and clean up
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc libpq-dev curl && rm -rf /var/lib/apt/lists/*
+# Install system dependencies (minimize layers)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc libpq-dev curl && \
+    rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
+# Install Python dependencies (cache layers)
 COPY requirements.txt /app/
-RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Copy the project files
+# Copy project files (cache layers)
 COPY . /app/
 
-# Collect static files
+# Collect static files (minimize layers)
 RUN python manage.py collectstatic --noinput
 
-# Stage 2: Production stage
+# ==========================
+# 🚀 Stage 2: Production Stage
+# ==========================
 FROM python:3.10-slim
 
+# Environment variables for Python
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Copy the application from the builder stage
+# Copy dependencies from the builder stage (minimize layers)
+COPY --from=builder /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copy application code (minimize layers)
 COPY --from=builder /app /app
 
-# Reinstall Python dependencies to avoid compatibility issues
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
+# ✅ Ensure Waitress is installed (explicit check)
+RUN pip show waitress || (echo "Waitress is missing in production!" && exit 1)
 
-# Verify that Waitress is installed in the production stage
-RUN pip show waitress || (echo "Waitress is missing in the production stage!" && exit 1)
+# Create a volume for media files (Fly.io volume mount)
+# This is handled by Fly.io mounts in fly.toml, and the volume is not created here.
+# You do not need this line: VOLUME /app/media
 
-# Create a volume for media files
-VOLUME /app/media
-
-# Fly.io expects your app to listen on port 8080
+# Expose the correct port for Fly.io
 EXPOSE 8080
 
-# Start the application with Waitress
+# ✅ Start the application with Waitress
 CMD ["python", "run_waitress.py"]
